@@ -28,5 +28,9 @@
             <artifactId>auto-service</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+        </dependency>
     </dependencies>
 </project>
