@@ -5,13 +5,13 @@ import io.dagger.client.DaggerQueryException;
 import io.dagger.client.Directory;
 import io.dagger.module.Base;
 import io.dagger.module.annotation.Function;
-import io.dagger.module.annotation.Object;
+import io.dagger.module.annotation.Module;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /** Dagger Java Module main object */
-@Object
+@Module
 public class DaggerModule extends Base {
   public DaggerModule() {
     super();

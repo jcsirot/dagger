@@ -169,7 +169,6 @@ func (m *JavaSdk) addTemplate(
 			// And rename everything so that they match the dagger module name
 			WithExec([]string{"sed", "-i", "-e", fmt.Sprintf("s/dagger-module/%s/g", snakeName), absPath("pom.xml")}).
 			WithExec([]string{"sed", "-i", "-e", fmt.Sprintf("s/DaggerModule/%s/g", camelName), absPath("src", "main", "java", "io", "dagger", "sample", "module", "DaggerModule.java")}).
-			WithExec([]string{"sed", "-i", "-e", fmt.Sprintf("s/DaggerModule/%s/g", camelName), absPath("src", "main", "java", "io", "dagger", "sample", "module", "package-info.java")}).
 			WithExec([]string{"mv", absPath("src", "main", "java", "io", "dagger", "sample", "module", "DaggerModule.java"), absPath("src", "main", "java", "io", "dagger", "sample", "module", fmt.Sprintf("%s.java", camelName))})
 
 		return ctr
@@ -185,7 +184,7 @@ func (m *JavaSdk) generateCode(
 	// generate the java sdk dependencies
 	javaDeps := m.buildJavaDependencies(ctx, introspectionJSON)
 	// generate the entrypoint class based on the user module
-	entrypoint := ctr.WithExec([]string{"mvn", "clean", "compile"})
+	entrypoint := ctr.WithExec([]string{"mvn", "clean", "compile" /*, "-e" */})
 	return dag.
 		Directory().
 		// copy all user files

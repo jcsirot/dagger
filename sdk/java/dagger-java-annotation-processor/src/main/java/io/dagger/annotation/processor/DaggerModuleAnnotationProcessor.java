@@ -19,23 +19,10 @@ import jakarta.json.bind.JsonbBuilder;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.processing.*;
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
@@ -57,23 +44,25 @@ public class DaggerModuleAnnotationProcessor extends AbstractProcessor {
   }
 
   ModuleInfo generateModuleInfo(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    String moduleName = null, moduleDescription = null;
+    String moduleDescription = null;
     Set<ObjectInfo> annotatedObjects = new HashSet<>();
 
     for (TypeElement annotation : annotations) {
       for (Element element : roundEnv.getElementsAnnotatedWith(annotation)) {
-        if (element.getKind() == ElementKind.PACKAGE) {
+        if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.RECORD) {
           Module module = element.getAnnotation(Module.class);
-          moduleName = module.value();
-          moduleDescription = module.description();
-          if (moduleDescription.isEmpty()) {
-            moduleDescription = trimDoc(processingEnv.getElementUtils().getDocComment(element));
+          if (module != null) { // Module main class or record
+            moduleDescription = module.description();
+            if (moduleDescription.isEmpty()) {
+              moduleDescription = trimDoc(processingEnv.getElementUtils().getDocComment(element));
+            }
           }
-        } else if (element.getKind() == ElementKind.CLASS
-            || element.getKind() == ElementKind.RECORD) {
           TypeElement typeElement = (TypeElement) element;
           String qName = typeElement.getQualifiedName().toString();
-          String name = typeElement.getAnnotation(Object.class).value();
+          String name =
+              module != null
+                  ? typeElement.getSimpleName().toString()
+                  : typeElement.getAnnotation(Object.class).value();
           if (name.isEmpty()) {
             name = typeElement.getSimpleName().toString();
           }
@@ -126,9 +115,7 @@ public class DaggerModuleAnnotationProcessor extends AbstractProcessor {
     }
 
     return new ModuleInfo(
-        moduleName,
-        moduleDescription,
-        annotatedObjects.toArray(new ObjectInfo[annotatedObjects.size()]));
+        moduleDescription, annotatedObjects.toArray(new ObjectInfo[annotatedObjects.size()]));
   }
 
   static JavaFile generate(ModuleInfo moduleInfo) {
