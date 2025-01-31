@@ -17,6 +17,7 @@ import io.dagger.module.info.ObjectInfo;
 import io.dagger.module.info.ParameterInfo;
 import jakarta.json.bind.JsonbBuilder;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.HashSet;
@@ -352,6 +353,11 @@ public class DaggerModuleAnnotationProcessor extends AbstractProcessor {
                                   "result = invoke(parentJson, parentName, fnName, inputArgs)")
                               .endControlFlow()
                               .addStatement("fnCall.returnValue(result)")
+                              .nextControlFlow("catch ($T e)", InvocationTargetException.class)
+                              .addStatement(
+                                  "fnCall.returnError(dag.error(e.getTargetException().getMessage()))")
+                              .addStatement("throw e")
+                              .endControlFlow()
                               .nextControlFlow("catch ($T e)", Exception.class)
                               .addStatement("fnCall.returnError(dag.error(e.getMessage()))")
                               .addStatement("throw e")
